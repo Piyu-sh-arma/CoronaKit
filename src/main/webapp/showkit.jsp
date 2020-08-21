@@ -10,7 +10,7 @@
 	<jsp:include page="header.jsp" />
 	<hr />
 
-	<h1 align="center" style="font: normal; font-size: 20px; color: blue;">Step-2 : Select Products</h1>
+	<h1 align="center" style="font: normal; font-size: 20px; color: blue;">Step-3 : Select Quantity</h1>
 	<c:choose>
 		<c:when test="${listProductErrMsg!=null}">
 			<div align="center">
@@ -56,13 +56,6 @@
 			</div>
 		</c:otherwise>
 	</c:choose>
-	<c:if test="${txErrMsg!=null}">
-		<p style="font: normal; font-size: 20px; color: red;">${txErrMsg }</p>
-	</c:if>
-	<c:if test="${txSucssMsg!=null}">
-		<p align="center" style="font: normal; font-size: 20px; color: green;">${txSucssMsg }</p>
-	</c:if>
-
 	<hr />
 	<jsp:include page="footer.jsp" />
 </body>

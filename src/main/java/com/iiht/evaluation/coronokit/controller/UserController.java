@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.servlet.RequestDispatcher;
@@ -214,32 +217,36 @@ public class UserController extends HttpServlet {
 		if (orderSumm != null) {
 			double totalAmount = 0;
 			Enumeration<String> parameterNames = request.getParameterNames();
-			while (parameterNames.hasMoreElements()) {
-				String paramName = parameterNames.nextElement();
-				if (paramName.matches("pid\\d+")) {
-					try {
+			Map<Integer, Integer> prdctQntyMap = new HashMap<Integer, Integer>();
+			try {
+				while (parameterNames.hasMoreElements()) {
+					String paramName = parameterNames.nextElement();
+					if (paramName.matches("pid\\d+")) {
 						int quantity = Integer.parseInt(request.getParameterValues(paramName)[0]);
-						ProductMaster product = productMasterDao.getProductById(Integer.parseInt(paramName.replace("pid", "")));
-						int nextKitId = kitDAO.getNextCoronaKitId();
-						KitDetail kitDtls = new KitDetail();
-						kitDtls.setId(nextKitId);
-						kitDtls.setCoronaKitId(orderSumm.getCoronaKit().getId());
-						kitDtls.setProductId(product.getId());
-						kitDtls.setQuantity(quantity);
-						Double kitAmnt = quantity * Double.parseDouble(product.getCost());
-						kitDtls.setAmount(kitAmnt);
-						totalAmount += kitAmnt;
-						orderSumm.getKitDetails().add(kitDtls);
-						orderSumm.getCoronaKit().setTotalAmount(totalAmount);
+						prdctQntyMap.put(Integer.parseInt(paramName.replace("pid", "")), quantity);
 
-					} catch (Exception exception) {
-						request.setAttribute("exception", exception);
-						view = "errorPage.jsp";
-						break;
 					}
-
 				}
+				for (Entry<Integer, Integer> entry : prdctQntyMap.entrySet()) {
+					ProductMaster product = productMasterDao.getProductById(entry.getKey());
+					KitDetail kitDtls = new KitDetail();
+					kitDtls.setCoronaKitId(orderSumm.getCoronaKit().getId());
+					kitDtls.setProductId(product.getId());
+					kitDtls.setQuantity(entry.getValue());
+					Double kitAmnt = entry.getValue() * Double.parseDouble(product.getCost());
+					kitDtls.setAmount(kitAmnt);
+					totalAmount += kitAmnt;
+					orderSumm.getKitDetails().add(kitDtls);
+					orderSumm.getCoronaKit().setTotalAmount(totalAmount);
+				}
+			} catch (NumberFormatException exception) {
+				request.setAttribute("txErrMsg", "Quantity can only be whole number. Please check");
+				view = "user?action=showkit";
+			} catch (Exception exception) {
+				request.setAttribute("exception", exception);
+				view = "errorPage.jsp";
 			}
+
 		} else {
 			request.setAttribute("exMsg", "Couldn't fetch order status");
 			view = "errorPage.jsp";
@@ -249,21 +256,26 @@ public class UserController extends HttpServlet {
 	}
 
 	private String saveOrderForDelivery(HttpServletRequest request, HttpServletResponse response) {
-		String view = "user?action=ordersummary";
+		String view = "placeorder.jsp";
 		try {
-			if (request.getParameter("address") != null) {
+			if (request.getParameter("address") == null) {
+				request.setAttribute("txErrMsg", "Couldn't fetch the address details");
+			}
+			if (request.getParameter("address").trim().length() == 0) {
+				request.setAttribute("txErrMsg", "Address can't be blanck");
+			} else {
+				
 				OrderSummary orderSumm = (OrderSummary) request.getSession().getAttribute("orderSumm");
 				orderSumm.getCoronaKit().setDeliveryAddress(request.getParameter("address"));
 				orderSumm.getCoronaKit().setOrderDate(LocalDateTime.now().toString());
 				orderSumm.getCoronaKit().setOrderFinalized(true);
 				List<KitDetail> kitDtls = orderSumm.getKitDetails();
 				for (KitDetail kit : kitDtls) {
-//					kitDAO.addKit(kit);
-					System.out.println(kit.toString());
+					int nextKitId = kitDAO.getNextKitId();
+					kit.setId(nextKitId);
+					kitDAO.addKit(kit);
 				}
-
-			} else {
-				request.setAttribute("exMsg", "Couldn't fetch the address details");
+				view = "user?action=ordersummary";
 			}
 		} catch (Exception e) {
 			request.setAttribute("exception", e);
@@ -279,7 +291,8 @@ public class UserController extends HttpServlet {
 		if (orderSumm != null) {
 			request.setAttribute("coronaKit", orderSumm.getCoronaKit());
 			request.setAttribute("kitDetails", orderSumm.getKitDetails());
-			request.getSession().removeAttribute("orderSumm");
+			request.getSession().setAttribute("orderSumm", null);
+			request.getSession().setAttribute("addedProducts",null);
 		} else {
 			request.setAttribute("exMsg", "Couldn't fetch the address details");
 			view = "errorPage.jsp";

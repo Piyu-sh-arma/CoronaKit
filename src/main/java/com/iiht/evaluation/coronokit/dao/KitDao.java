@@ -14,7 +14,7 @@ public class KitDao {
 	private String jdbcPassword;
 	private Connection jdbcConnection;
 
-	public static final String INST_PRODUCT_QRY = "INSERT INTO kit (kitid,coronaKitId,productId,quantity,price) VALUES (?,?,?,?,?)";
+	public static final String INST_PRODUCT_QRY = "INSERT INTO kit (kitid,coronaKitId,productId,quantity,amount) VALUES (?,?,?,?,?)";
 	public static final String UPDT_PRODUCT_QRY = "UPDATE products set productname=?,price=?,description=? WHERE productid=?";
 	public static final String MAX_CORONAKITID_QRY = "SELECT MAX(coronaKitId) FROM kit;";
 	public static final String MAX_KITID_QRY = "SELECT MAX(kitid) FROM kit;";
@@ -53,7 +53,7 @@ public class KitDao {
 			}
 		} catch (SQLException e) {
 			this.disconnect();
-			throw new Exception("Failure in fetching next Product Id");
+			throw new Exception("Failure in fetching next CoronaKit Id");
 		}
 		return nextCoronaKitId;
 	}
@@ -69,7 +69,7 @@ public class KitDao {
 			}
 		} catch (SQLException e) {
 			this.disconnect();
-			throw new Exception("Failure in fetching next Product Id");
+			throw new Exception("Failure in fetching next Kit Id");
 		}
 		return nextKitId;
 	}
@@ -88,7 +88,8 @@ public class KitDao {
 				isAdded = ps.executeUpdate() > 0;
 
 			} catch (SQLException e) {
-				throw new Exception("Failure in adding product");
+				e.printStackTrace();
+				throw new Exception("Failure in adding kit");
 			}
 		}
 		return isAdded;
