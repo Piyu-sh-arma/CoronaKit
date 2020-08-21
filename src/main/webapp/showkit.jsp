@@ -12,14 +12,6 @@
 
 	<h1 align="center" style="font: normal; font-size: 20px; color: blue;">Step-3 : Select Quantity</h1>
 	<c:choose>
-		<c:when test="${listProductErrMsg!=null}">
-			<div align="center">
-				<div>
-					<br> <br> <br>
-					<p style="font: normal; font-size: 30px; color: red;">"${listProductErrMsg}"</p>
-				</div>
-			</div>
-		</c:when>
 		<c:when test="${products==null || products.isEmpty() }">
 			<p style="font: normal; font-size: 30px; color: red;">No products found. Add some products!!</p>
 		</c:when>
