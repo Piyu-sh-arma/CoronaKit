@@ -20,7 +20,7 @@
 				<label style="display: table-cell;">Email:</label>
 				<input type="email" name="usrEmail" required/><br> <br> 
 				<label style="display: table-cell;">Mobile:</label> 
-				<input type="text" name="usrMobile" pattern="^((\+)?(\d{2}[-])?(\d{10}){1})?(\d{11}){0,1}?$" oninvalid="setCustomValidity('Enter valid Mobile. Ex: +91-123456789 or 123456789')" required /><br> <br> 
+				<input type="text" name="usrMobile"  required /><br> <br> 
 				<button>Next>> Add Products</button>
 				<br>
 			</form>
